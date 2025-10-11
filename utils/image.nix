@@ -22,7 +22,6 @@ pkgs.stdenv.mkDerivation {
   nativeBuildInputs = with pkgs; [
     e2fsprogs
     util-linux
-    xz
   ];
 
   inherit bootLoader;
@@ -34,7 +33,7 @@ pkgs.stdenv.mkDerivation {
       mkdir -p ./files/etc/nixos
       ${image.config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${image.config.system.build.toplevel} -d ./files/boot
     '';
-    volumeLabel = "NIXOS";
+    volumeLabel = "NIXOS_SD";
   });
 
   buildCommand = ''
@@ -62,7 +61,7 @@ pkgs.stdenv.mkDerivation {
     dd bs=4K seek=8 if=$bootLoader/idbloader.img of=$img conv=notrunc
     dd bs=4K seek=2048 if=$bootLoader/u-boot.itb of=$img conv=notrunc
 
-    xz -vc $img > $out/nanopi-${modelDef.model}-nixos.img.xz
+    cp $img $out/nanopi-${modelDef.model}-nixos.img
   '';
 
 }

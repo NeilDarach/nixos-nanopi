@@ -1,24 +1,12 @@
-{
-  config,
-  pkgs,
-  modulesPath,
-  lib,
-  system,
-  ...
-}:
-{
-  imports = [
-    ./boot.nix
-  ];
+{ config, pkgs, modulesPath, lib, system, ... }: {
+  imports = [ ./boot.nix ];
   config = {
     fileSystems = {
       "/" = {
-        device = "/dev/disk/by-label/NIXOS";
+        device = "/dev/disk/by-label/NIXOS_SD";
         fsType = "ext4";
       };
-      "/var/log" = {
-        fsType = "tmpfs";
-      };
+      "/var/log" = { fsType = "tmpfs"; };
     };
 
     boot.tmp.useTmpfs = true;
@@ -27,12 +15,7 @@
     networking.hostName = "nixos";
     networking.useDHCP = true;
 
-    nix = {
-      settings.experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-    };
+    nix = { settings.experimental-features = [ "nix-command" "flakes" ]; };
 
     environment.systemPackages = with pkgs; [
       git
@@ -49,26 +32,21 @@
     ];
 
     security.sudo.wheelNeedsPassword = false;
-    nix.settings.trusted-users = [
-      "root"
-      "@wheel"
-    ];
+    nix.settings.trusted-users = [ "root" "@wheel" ];
 
     users.users.nix = {
       isNormalUser = true;
       description = "nix";
-      extraGroups = [
-        "networkmanager"
-        "wheel"
+      extraGroups = [ "networkmanager" "wheel" ];
+      password = "*";
+      openssh.authorizedKeys.keys = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIJ0nGtONOY4QnJs/xj+N4rKf4pCWfl25BOfc8hEczUg neil.darach@gmail.com"
       ];
-      password = "nix";
     };
 
     services.openssh.enable = true;
 
-    i18n = {
-      defaultLocale = "en_GB.UTF-8";
-    };
+    i18n = { defaultLocale = "en_GB.UTF-8"; };
 
     environment.etc = {
       "systemd/journald.conf.d/99-storage.conf".text = ''
