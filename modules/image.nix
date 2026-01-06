@@ -11,6 +11,8 @@
 
     boot.tmp.useTmpfs = true;
     boot.growPartition = true;
+    boot.initrd.availableKernelModules = [ "zfs" ];
+    boot.initrd.kernelModules = [ "zfs" ];
 
     networking.hostName = "nixos";
     networking.useDHCP = true;
@@ -29,6 +31,7 @@
       nvd
       ethtool
       sysstat
+      zfs
     ];
 
     security.sudo.wheelNeedsPassword = false;
