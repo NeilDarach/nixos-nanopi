@@ -11,6 +11,7 @@
 
     boot.tmp.useTmpfs = true;
     boot.growPartition = true;
+    boot.supportedFilesystems = [ "zfs" ];
     boot.initrd.availableKernelModules = [ "zfs" ];
     boot.initrd.kernelModules = [ "zfs" ];
 
