@@ -1,8 +1,4 @@
-{
-  pkgs,
-  nixpkgs,
-  modelDef,
-}:
+{ pkgs, nixpkgs, modelDef, }:
 let
   bootLoader = import ./loader.nix {
     inherit pkgs;
@@ -10,31 +6,31 @@ let
   };
   image = nixpkgs.lib.nixosSystem {
     system = "aarch64-linux";
-    modules = [
-      ../modules/image.nix
-      (import ../modules/model-specific.nix modelDef)
-    ];
+    modules =
+      [ ../modules/image.nix (import ../modules/model-specific.nix modelDef) ];
   };
-in
-pkgs.stdenv.mkDerivation {
+in pkgs.stdenv.mkDerivation {
   name = "nanopi-${modelDef.model}-nixos";
 
-  nativeBuildInputs = with pkgs; [
-    e2fsprogs
-    util-linux
-  ];
+  nativeBuildInputs = with pkgs; [ e2fsprogs util-linux ];
 
   inherit bootLoader;
 
-  rootfsImage = pkgs.callPackage "${toString nixpkgs}/nixos/lib/make-ext4-fs.nix" ({
-    storePaths = image.config.system.build.toplevel;
-    populateImageCommands = ''
-      mkdir -p ./files/boot
-      mkdir -p ./files/etc/nixos
-      ${image.config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${image.config.system.build.toplevel} -d ./files/boot
-    '';
-    volumeLabel = "NIXOS_SD";
-  });
+  rootfsImage =
+    pkgs.callPackage "${toString nixpkgs}/nixos/lib/make-ext4-fs.nix" ({
+      storePaths = image.config.system.build.toplevel;
+      populateImageCommands = ''
+        mkdir -p ./files/boot
+        mkdir -p ./files/etc/nixos
+        ${image.config.boot.loader.generic-extlinux-compatible.populateCmd} -c ${image.config.system.build.toplevel} -d ./files/boot
+        mkdir -p ./files/uboot
+        cp ${bootLoader}/idbloader.img ./files/uboot
+        cp ${bootLoader}/u-boot.itb ./files/uboot
+        echo "dd bs=4K seek=8 if=/uboot/idbloader.img of=/dev/?? conv=notrunc" > ./files/uboot/install.txt
+        echo "dd bs=4K seek=2048 if=/uboot/u-boot.itb of=/dev/?? conv=notrunc" >> ./files/uboot/install.txt
+      '';
+      volumeLabel = "NIXOS_SD";
+    });
 
   buildCommand = ''
     mkdir $out
@@ -61,7 +57,7 @@ pkgs.stdenv.mkDerivation {
     dd bs=4K seek=8 if=$bootLoader/idbloader.img of=$img conv=notrunc
     dd bs=4K seek=2048 if=$bootLoader/u-boot.itb of=$img conv=notrunc
 
-    cp $img $out/nanopi-${modelDef.model}-nixos.img
+    xz -vc $img > $out/nanopi-${modelDef.model}-nixos.img.xz
   '';
 
 }
