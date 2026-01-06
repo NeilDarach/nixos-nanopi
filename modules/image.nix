@@ -17,6 +17,7 @@
 
     networking.hostName = "nixos";
     networking.useDHCP = true;
+    networking.hostId = "1b9f09d8";
 
     nix = { settings.experimental-features = [ "nix-command" "flakes" ]; };
 
